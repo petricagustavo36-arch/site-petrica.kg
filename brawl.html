@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Brawl Stars Mini</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #1e1e2f;
+  font-family: Arial, sans-serif;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: linear-gradient(#4cc9f0, #4895ef);
+}
+
+.player {
+  width: 50px;
+  height: 50px;
+  background: gold;
+  border-radius: 10px;
+  position: absolute;
+  bottom: 20px;
+}
+
+.enemy {
+  width: 40px;
+  height: 40px;
+  background: crimson;
+  border-radius: 10px;
+  position: absolute;
+  top: 20px;
+}
+
+.bullet {
+  width: 8px;
+  height: 15px;
+  background: black;
+  position: absolute;
+  border-radius: 5px;
+}
+
+#ui {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: white;
+  font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+<div id="game">
+  <div id="ui">❤️ Vidas: <span id="lives">3</span></div>
+  <div id="player" class="player"></div>
+</div>
+
+<script>
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const livesText = document.getElementById("lives");
+
+let x = window.innerWidth / 2 - 25;
+let lives = 3;
+let enemies = [];
+
+player.style.left = x + "px";
+
+// CONTROLES
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") x -= 15;
+  if (e.key === "ArrowRight") x += 15;
+  if (e.key === "ArrowUp") shoot();
+
+  x = Math.max(0, Math.min(window.innerWidth - 50, x));
+  player.style.left = x + "px";
+});
+
+// TIRO
+function shoot() {
+  const bullet = document.createElement("div");
+  bullet.className = "bullet";
+  bullet.style.left = x + 21 + "px";
+  bullet.style.bottom = "70px";
+  game.appendChild(bullet);
+
+  let y = 70;
+  const interval = setInterval(() => {
+    y += 15;
+    bullet.style.bottom = y + "px";
+
+    enemies.forEach((enemy, index) => {
+      const eRect = enemy.getBoundingClientRect();
+      const bRect = bullet.getBoundingClientRect();
+
+      if (
+        bRect.left < eRect.right &&
+        bRect.right > eRect.left &&
+        bRect.top < eRect.bottom &&
+        bRect.bottom > eRect.top
+      ) {
+        enemy.remove();
+        enemies.splice(index, 1);
+        bullet.remove();
+        clearInterval(interval);
+      }
+    });
+
+    if (y > window.innerHeight) {
+      bullet.remove();
+      clearInterval(interval);
+    }
+  }, 30);
+}
+
+// CRIAR INIMIGO
+function spawnEnemy() {
+  const enemy = document.createElement("div");
+  enemy.className = "enemy";
+  enemy.style.left = Math.random() * (window.innerWidth - 40) + "px";
+  game.appendChild(enemy);
+  enemies.push(enemy);
+
+  let y = 20;
+  const move = setInterval(() => {
+    y += 3;
+    enemy.style.top = y + "px";
+
+    if (y > window.innerHeight - 80) {
+      enemy.remove();
+      enemies = enemies.filter(e => e !== enemy);
+      lives--;
+      livesText.textContent = lives;
+
+      if (lives <= 0) {
+        alert("💀 GAME OVER");
+        location.reload();
+      }
+      clearInterval(move);
+    }
+  }, 40);
+}
+
+// MULTIPLAYER FAKE (inimigos)
+setInterval(spawnEnemy, 1500);
+</script>
+</body>
+</html>
